@@ -6,15 +6,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1 import router as api_v1_router
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import AsyncSessionLocal, Base, engine
+from app.services import settings_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: ensure data dirs exist and create all tables
+    # Startup: ensure data dirs exist, create all tables, seed default settings
     settings.ensure_dirs()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    async with AsyncSessionLocal() as db:
+        await settings_service.ensure_defaults(db)
     yield
     # Shutdown: dispose engine
     await engine.dispose()

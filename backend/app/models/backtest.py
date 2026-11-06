@@ -1,6 +1,6 @@
 """Backtest, Trade, Drawing ORM models."""
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,9 +27,9 @@ class Backtest(Base):
     settings_json: Mapped[str | None] = mapped_column(Text)
     stats_cache_json: Mapped[str | None] = mapped_column(Text)
     engine_version: Mapped[str | None] = mapped_column(String(20))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC)
     )
 
     trades: Mapped[list["Trade"]] = relationship(
@@ -65,7 +65,7 @@ class Trade(Base):
     max_fav_exc: Mapped[float | None] = mapped_column(Float)
     tags_json: Mapped[str | None] = mapped_column(Text)                 # JSON array
     notes: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
 
     backtest: Mapped["Backtest"] = relationship("Backtest", back_populates="trades")
 
@@ -80,9 +80,9 @@ class Drawing(Base):
     type: Mapped[str] = mapped_column(String(20), nullable=False)  # RECT | LONG_POS | SHORT_POS
     data_json: Mapped[str | None] = mapped_column(Text)                 # shape-specific JSON
     visible: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC)
     )
 
     backtest: Mapped["Backtest"] = relationship("Backtest", back_populates="drawings")
@@ -94,5 +94,5 @@ class AppSetting(Base):
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     value: Mapped[str | None] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC)
     )
